@@ -2,35 +2,52 @@ const express = require("express");
 const app = express();
 
 app.get("/game", async (req, res) => {
-  const universeId = req.query.universeId;
+  const placeId = req.query.placeId;
 
-  if (!universeId) {
-    return res.json({ error: "missing universeId" });
+  if (!placeId) {
+    return res.json({ error: "missing placeId" });
   }
 
   try {
-    const response = await fetch(
+    // 1. universe çek
+    const uniRes = await fetch(
+      `https://apis.roblox.com/universes/v1/places/${placeId}/universe`
+    );
+
+    const uniData = await uniRes.json();
+    const universeId = uniData?.universeId;
+
+    if (!universeId) {
+      return res.json({
+        name: "Invalid PlaceId",
+        players: 0
+      });
+    }
+
+    // 2. game çek
+    const gameRes = await fetch(
       `https://games.roblox.com/v1/games?universeIds=${universeId}`
     );
 
-    const data = await response.json();
-    const game = data.data?.[0];
+    const gameData = await gameRes.json();
+    const game = gameData?.data?.[0];
 
-    if (!game) {
+    // 3. SAFETY FALLBACK (EN ÖNEMLİ KISIM)
+    if (!game || !game.name) {
       return res.json({
-        name: "Not Found",
+        name: "Private/Unavailable Game",
         players: 0
       });
     }
 
     res.json({
       name: game.name,
-      players: game.playing
+      players: game.playing || 0
     });
 
   } catch (e) {
     res.json({
-      name: "Error",
+      name: "API Error",
       players: 0
     });
   }
