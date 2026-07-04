@@ -1,30 +1,22 @@
 module.exports = async (req, res) => {
-  const { placeId } = req.query;
+  const { code } = req.query;
 
   try {
-    const u = await fetch(
-      `https://apis.roblox.com/universes/v1/places/${placeId}/universe`
+    const r = await fetch(
+      `https://apis.roblox.com/universes/v1/resolve-share-links?shareLinks=${code}`
     );
 
-    const ujson = await u.json();
-    const universeId = ujson?.universeId;
+    const data = await r.json();
 
-    const g = await fetch(
-      `https://games.roblox.com/v1/games?universeIds=${universeId}`
-    );
-
-    const data = await g.json();
-    const game = data?.data?.[0];
+    const placeId = data?.[0]?.rootPlaceId;
 
     res.json({
-      name: game?.name,
-      players: game?.playing
+      placeId
     });
 
   } catch (e) {
     res.json({
-      name: "error",
-      players: 0
+      error: "failed"
     });
   }
 };
