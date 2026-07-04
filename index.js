@@ -1,3 +1,4 @@
+
 const express = require("express");
 const app = express();
 
@@ -9,33 +10,21 @@ app.get("/game", async (req, res) => {
   }
 
   try {
-    const response = await fetch(
-      `https://games.roblox.com/v1/games?universeIds=${placeId}`
+    const r = await fetch(
+      `https://games.roblox.com/v1/games/multiget-place-details?placeIds=${placeId}`
     );
 
-    const data = await response.json();
+    const data = await r.json();
 
-    console.log(data); // DEBUG (Vercel loglarda görürsün)
-
-    const game = data?.data?.[0];
-
-    if (!game) {
-      return res.json({
-        name: "No Data Found",
-        players: 0
-      });
-    }
+    const game = data?.[0];
 
     res.json({
-      name: game.name,
-      players: game.playing
+      name: game?.name || "unknown",
+      players: game?.playing || 0
     });
 
   } catch (e) {
-    res.json({
-      name: "API Error",
-      players: 0
-    });
+    res.json({ name: "error", players: 0 });
   }
 });
 
