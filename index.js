@@ -1,12 +1,8 @@
-
-const express = require("express");
-const app = express();
-
-app.get("/game", async (req, res) => {
-  const placeId = req.query.placeId;
+export default async function handler(req, res) {
+  const { placeId } = req.query;
 
   if (!placeId) {
-    return res.json({ error: "missing placeId" });
+    return res.status(400).json({ error: "missing placeId" });
   }
 
   try {
@@ -18,14 +14,12 @@ app.get("/game", async (req, res) => {
 
     const game = data?.[0];
 
-    res.json({
+    res.status(200).json({
       name: game?.name || "unknown",
       players: game?.playing || 0
     });
 
   } catch (e) {
-    res.json({ name: "error", players: 0 });
+    res.status(500).json({ error: "api error" });
   }
-});
-
-module.exports = app;
+}
