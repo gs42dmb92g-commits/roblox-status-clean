@@ -9,25 +9,32 @@ app.get("/game", async (req, res) => {
   }
 
   try {
-    // 🔥 TEK ADIMDA DOĞRU VERİ
-    const response = await fetch(
-      `https://games.roblox.com/v1/games?universeIds=${placeId}`
+    // 1. placeId → universeId
+    const uniRes = await fetch(
+      `https://apis.roblox.com/universes/v1/places/${placeId}/universe`
     );
 
-    const data = await response.json();
+    const uniData = await uniRes.json();
+    const universeId = uniData.universeId;
 
-    const game = data?.data?.[0];
-
-    if (!game) {
+    if (!universeId) {
       return res.json({
-        name: "Not Found",
+        name: "Universe not found",
         players: 0
       });
     }
 
+    // 2. universeId → game data
+    const gameRes = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${universeId}`
+    );
+
+    const gameData = await gameRes.json();
+    const game = gameData.data?.[0];
+
     res.json({
-      name: game.name,
-      players: game.playing
+      name: game?.name || "Unknown",
+      players: game?.playing || 0
     });
 
   } catch (e) {
