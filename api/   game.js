@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   const { placeId } = req.query;
 
   if (!placeId) {
@@ -12,16 +12,23 @@ export default async function handler(req, res) {
 
     const data = await r.json();
 
-    const game = data?.data?.[0];
+    if (!data || !data.data || !data.data[0]) {
+      return res.status(404).json({
+        error: "game not found"
+      });
+    }
+
+    const game = data.data[0];
 
     return res.status(200).json({
-      name: game?.name || "unknown",
-      players: game?.playing || 0
+      name: game.name,
+      players: game.playing || 0
     });
 
   } catch (e) {
     return res.status(500).json({
-      error: "api error"
+      error: "fetch failed",
+      detail: String(e)
     });
   }
-}
+};
