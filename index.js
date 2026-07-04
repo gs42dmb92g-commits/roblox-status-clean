@@ -2,15 +2,13 @@ module.exports = async (req, res) => {
   const { placeId } = req.query;
 
   try {
-    // 1. universe al
     const u = await fetch(
       `https://apis.roblox.com/universes/v1/places/${placeId}/universe`
     );
 
     const ujson = await u.json();
-    const universeId = ujson.universeId;
+    const universeId = ujson?.universeId;
 
-    // 2. game çek
     const g = await fetch(
       `https://games.roblox.com/v1/games?universeIds=${universeId}`
     );
@@ -19,8 +17,8 @@ module.exports = async (req, res) => {
     const game = data?.data?.[0];
 
     res.json({
-      name: game?.name || "unknown",
-      players: game?.playing || 0
+      name: game?.name,
+      players: game?.playing
     });
 
   } catch (e) {
