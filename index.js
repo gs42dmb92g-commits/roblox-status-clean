@@ -5,14 +5,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "missing placeId" });
   }
 
-  const r = await fetch(
-    `https://games.roblox.com/v1/games?universeIds=${placeId}`
-  );
+  try {
+    const r = await fetch(
+      `https://games.roblox.com/v1/games?universeIds=${placeId}`
+    );
 
-  const data = await r.json();
+    const data = await r.json();
 
-  return res.status(200).json({
-    name: data?.data?.[0]?.name ?? "unknown",
-    players: data?.data?.[0]?.playing ?? 0
-  });
+    const game = data?.data?.[0];
+
+    return res.status(200).json({
+      name: game?.name ?? "unknown",
+      players: game?.playing ?? 0
+    });
+
+  } catch (e) {
+    return res.status(500).json({
+      error: "server error"
+    });
+  }
 }
